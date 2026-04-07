@@ -247,6 +247,34 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
 
+        .feedback-message {
+            text-align: center;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1em;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-message.correct {
+            background: linear-gradient(135deg, #4caf50, #81c784);
+            color: white;
+            display: block;
+        }
+
+        .feedback-message.incorrect {
+            background: linear-gradient(135deg, #f44336, #e57373);
+            color: white;
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .options {
             display: grid;
             gap: 10px;
@@ -266,7 +294,7 @@
             box-shadow: 0 3px 8px rgba(0,0,0,0.06);
         }
 
-        .option-btn:hover {
+        .option-btn:hover:not(.disabled) {
             border-color: #c41e3a;
             background: #fff5f5;
             transform: translateY(-2px);
@@ -288,11 +316,23 @@
             background: linear-gradient(135deg, #2e7d32, #4caf50) !important;
             color: white !important;
             border-color: #ffd700 !important;
+            animation: pulse 0.5s ease;
         }
 
         .option-btn.incorrect {
             background: linear-gradient(135deg, #c62828, #ef5350) !important;
             color: white !important;
+            opacity: 0.95;
+        }
+
+        .option-btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
 
         .navigation {
@@ -544,6 +584,7 @@
                     <img class="question-image" id="questionImage" src="" alt="Question illustration">
                 </div>
                 <div class="question-text" id="questionText"></div>
+                <div class="feedback-message" id="feedbackMessage"></div>
                 <div class="options" id="optionsContainer"></div>
             </div>
 
@@ -576,68 +617,70 @@
 <div class="celebration" id="celebration"></div>
 
 <script>
-// Quiz Data - 50 Questions with realistic images
+// Quiz Data - 50 Questions with realistic portraits and images
 const quizData = [
-    { category: "Geography", question: "Which city is known as the Northern Capital of Russia?", options: ["Moscow", "St. Petersburg", "Kazan", "Novosibirsk"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/18c9635ac-d932-44cd-93d5-09d961542406.png" },
-    { category: "Landmarks", question: "What is the famous cathedral on Red Square with colourful domes?", options: ["Kazan Cathedral", "St. Basil's Cathedral", "Christ the Saviour", "St. Isaac's Cathedral"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1f9256458-7f8e-470e-9ff1-fa92d592dbb7.png" },
-    { category: "Literature", question: "Who wrote the novel War and Peace?", options: ["Dostoevsky", "Chekhov", "Leo Tolstoy", "Turgenev"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1467adfc0-03ac-44aa-b6ff-f57241a260ee.png" },
-    { category: "Science", question: "Who created the periodic table of elements in 1869?", options: ["Ivan Pavlov", "Dmitri Mendeleev", "Lobachevsky", "Sergei Korolev"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/186f1984b-1d54-4010-a922-296095e53d18.png" },
-    { category: "Music", question: "Who composed Swan Lake and The Nutcracker?", options: ["Rachmaninoff", "Stravinsky", "Tchaikovsky", "Mussorgsky"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/13813c30c-8615-4945-9301-37d65eab475c.png" },
-    { category: "History", question: "Which tsar founded St. Petersburg in 1703?", options: ["Ivan the Terrible", "Peter the Great", "Alexander II", "Nicholas II"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1859518fd-d81f-477d-a63a-3425a84eb29e.png" },
-    { category: "Food", question: "What is the traditional Russian beetroot soup called?", options: ["Shchi", "Borscht", "Solyanka", "Okroshka"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1b60c9680-aa5e-4e02-85f2-6b4627e7af91.png" },
-    { category: "Space", question: "Who was the first human in space in 1961?", options: ["Gherman Titov", "Yuri Gagarin", "Alexei Leonov", "Valentina Tereshkova"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/142452cc4-3c3c-4ebf-83e1-fbdcf296c34c.png" },
-    { category: "Literature", question: "Who wrote Eugene Onegin?", options: ["Lermontov", "Alexander Pushkin", "Sergei Yesenin", "Mayakovsky"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1eb03e115-f8b8-42da-9a79-1d29368af6ba.png" },
-    { category: "Art", question: "Who painted The Ninth Wave?", options: ["Ilya Repin", "Ivan Aivazovsky", "Isaac Levitan", "Viktor Vasnetsov"], correct: 1, image: "" },
-    { category: "Geography", question: "What is the deepest lake in the world located in Siberia?", options: ["Lake Ladoga", "Lake Onega", "Lake Baikal", "Caspian Sea"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/11ca0232a-4c07-42ab-9a6d-3d07b3e0fff2.png" },
-    { category: "Traditions", question: "Which holiday features burning a straw effigy and eating blini?", options: ["New Year", "Maslenitsa", "Easter", "Ivan Kupala"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/13d05f78c-0c10-4d78-a08a-cb2866a5d7f7.png" },
-    { category: "Literature", question: "Who wrote Crime and Punishment?", options: ["Leo Tolstoy", "Fyodor Dostoevsky", "Anton Chekhov", "Nikolai Gogol"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/14b53fd12-71fc-49a2-a03b-42cc59676239.png" },
-    { category: "Music", question: "Who composed Pictures at an Exhibition?", options: ["Modest Mussorgsky", "Rimsky-Korsakov", "Alexander Borodin", "Mily Balakirev"], correct: 0, image: "" },
-    { category: "Politics", question: "Who was the first President of the Russian Federation?", options: ["Vladimir Putin", "Mikhail Gorbachev", "Boris Yeltsin", "Dmitry Medvedev"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1628d42c1-eb20-49b3-bdd5-c45c5f96fe30.png" },
-    { category: "Food", question: "What are pelmeni?", options: ["Thin pancakes", "Meat dumplings", "Fish soup", "Honey cake"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/141219488-6630-447e-ad20-31134e19b246.png" },
-    { category: "Science", question: "Who is famous for experiments with conditioned reflexes in dogs?", options: ["Mendeleev", "Ivan Pavlov", "Sergei Korolev", "Andrei Sakharov"], correct: 1, image: "" },
-    { category: "Art", question: "Who created the painting Black Square in 1915?", options: ["Kandinsky", "Kazimir Malevich", "Marc Chagall", "El Lissitzky"], correct: 1, image: "" },
-    { category: "Geography", question: "Which city hosted the 2014 Winter Olympics?", options: ["Moscow", "St. Petersburg", "Sochi", "Kazan"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/173ffc10f-fd9d-4661-96ea-42fbfb75fe64.png" },
-    { category: "Literature", question: "Who wrote The Master and Margarita?", options: ["Mikhail Bulgakov", "Boris Pasternak", "Solzhenitsyn", "Vladimir Nabokov"], correct: 0, image: "" },
-    { category: "History", question: "Which empress corresponded with Enlightenment philosophers?", options: ["Elizabeth Petrovna", "Catherine the Great", "Anna Ioannovna", "Maria Feodorovna"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1af5704ad-76ec-4d38-aace-2dfc700c0e57.png" },
-    { category: "Music", question: "Who is famous for four piano concertos and Rhapsody on a Theme of Paganini?", options: ["Tchaikovsky", "Sergei Rachmaninoff", "Stravinsky", "Shostakovich"], correct: 1, image: "" },
-    { category: "Food", question: "What is kvass?", options: ["Vodka", "Fermented bread drink", "Herbal tea", "Fruit compote"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/148b23cce-e604-468a-9256-ba0730da585a.png" },
-    { category: "Space", question: "Who designed Sputnik 1 launched in 1957?", options: ["Yuri Gagarin", "Sergei Korolev", "Tsiolkovsky", "Valentin Glushko"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/17643f9ec-d6a3-4e25-b905-89455d266533.png" },
-    { category: "Art", question: "Who painted Barge Haulers on the Volga?", options: ["Ilya Repin", "Vasily Surikov", "Ivan Kramskoy", "Alexei Savrasov"], correct: 0, image: "" },
-    { category: "Geography", question: "What is the longest river in Europe flowing through Russia?", options: ["Danube", "Volga", "Dnieper", "Don"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/164281861-7d23-48fa-b2dc-4f47dd597c20.png" },
-    { category: "Literature", question: "Who wrote The Cherry Orchard?", options: ["Anton Chekhov", "Alexander Ostrovsky", "Maxim Gorky", "Nikolai Gogol"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1081a2874-3c31-4d57-85d0-80a0faac8b4f.png" },
-    { category: "History", question: "Who initiated perestroika and glasnost?", options: ["Leonid Brezhnev", "Mikhail Gorbachev", "Nikita Khrushchev", "Yuri Andropov"], correct: 1, image: "" },
-    { category: "Music", question: "Who composed The Firebird and The Rite of Spring?", options: ["Sergei Prokofiev", "Igor Stravinsky", "Dmitri Shostakovich", "Aram Khachaturian"], correct: 1, image: "" },
-    { category: "Food", question: "What is the traditional Russian New Year salad called?", options: ["Vinegret", "Olivier salad", "Herring under fur coat", "Mimosa salad"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1fd9f1963-598d-46a3-8174-5fbf9372b517.png" },
-    { category: "Science", question: "Who founded Moscow University?", options: ["Mendeleev", "Mikhail Lomonosov", "Alexander Butlerov", "Nikolay Zinin"], correct: 1, image: "" },
-    { category: "Art", question: "Who is known for painting Russian birch landscapes?", options: ["Isaac Levitan", "Ivan Shishkin", "Alexei Savrasov", "Fyodor Vasilyev"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/18770e322-46cd-4f27-b44a-949ad5273a36.png" },
-    { category: "Geography", question: "Which city is famous for White Nights?", options: ["Moscow", "St. Petersburg", "Murmansk", "Arkhangelsk"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1e22736ab-e090-47c7-bac9-be771d9d5134.png" },
-    { category: "Literature", question: "Who wrote Doctor Zhivago?", options: ["Solzhenitsyn", "Boris Pasternak", "Mikhail Sholokhov", "Ivan Bunin"], correct: 1, image: "" },
-    { category: "Traditions", question: "Who is the Russian Grandfather Frost?", options: ["Ded Moroz", "Baba Yaga", "Koschei", "Domovoy"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/11e3ab452-e0aa-4886-8fe4-3f9da5012db9.png" },
-    { category: "History", question: "Which battle in 1812 was against Napoleon's army?", options: ["Battle of Borodino", "Battle of Poltava", "Battle of Kulikovo", "Battle of Stalingrad"], correct: 0, image: "" },
-    { category: "Music", question: "Who composed the opera Boris Godunov?", options: ["Tchaikovsky", "Modest Mussorgsky", "Rimsky-Korsakov", "Mikhail Glinka"], correct: 1, image: "" },
-    { category: "Food", question: "What are blini?", options: ["Meat pies", "Thin pancakes", "Dumplings", "Cookies"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1e1f30d12-fb8a-4bd3-acf2-69a971a9c0ae.png" },
-    { category: "Science", question: "Who won the Nobel Prize for Cherenkov radiation?", options: ["Andrei Sakharov", "Pavel Cherenkov", "Lev Landau", "Igor Tamm"], correct: 1, image: "" },
-    { category: "Art", question: "Who painted Morning in a Pine Forest?", options: ["Ivan Shishkin", "Isaac Levitan", "Ilya Repin", "Viktor Vasnetsov"], correct: 0, image: "" },
-    { category: "Geography", question: "How many time zones does Russia span?", options: ["7", "9", "11", "13"], correct: 2, image: "" },
-    { category: "Literature", question: "Who wrote The Captain's Daughter?", options: ["Alexander Pushkin", "Mikhail Lermontov", "Nikolai Gogol", "Ivan Turgenev"], correct: 0, image: "" },
-    { category: "History", question: "Who was the first crowned Tsar of Russia?", options: ["Ivan III", "Ivan IV", "Peter I", "Alexander I"], correct: 1, image: "" },
-    { category: "Music", question: "Who composed Symphony No. 7 Leningrad?", options: ["Sergei Prokofiev", "Dmitri Shostakovich", "Aram Khachaturian", "Rodion Shchedrin"], correct: 1, image: "" },
-    { category: "Food", question: "What are pirozhki?", options: ["Small buns with filling", "Layered cake", "Meat stew", "Vegetable salad"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/130b3aa1c-c1f3-4146-8e40-a5a186411a1c.png" },
-    { category: "Science", question: "Who is the father of astronautics?", options: ["Sergei Korolev", "Konstantin Tsiolkovsky", "Yuri Kondratyuk", "Friedrich Zander"], correct: 1, image: "" },
-    { category: "Art", question: "Who painted Alyonushka?", options: ["Viktor Vasnetsov", "Ilya Repin", "Isaac Levitan", "Mikhail Vrubel"], correct: 0, image: "" },
-    { category: "Geography", question: "What is the largest city in Russia by population?", options: ["St. Petersburg", "Novosibirsk", "Moscow", "Yekaterinburg"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1ba511eee-b20e-48cb-80a9-a8feaa3128bf.png" },
-    { category: "Literature", question: "Who wrote The Brothers Karamazov?", options: ["Leo Tolstoy", "Fyodor Dostoevsky", "Anton Chekhov", "Ivan Turgenev"], correct: 1, image: "" },
-    { category: "Traditions", question: "What is the three-stringed Russian instrument called?", options: ["Balalaika", "Domra", "Gusli", "Garmon"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1e7457d55-4d06-48a0-b851-3ecec7b4bd24.png" }
+    { category: "Geography", question: "Which city is known as the Northern Capital of Russia?", options: ["Moscow", "St. Petersburg", "Kazan", "Novosibirsk"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/st-petersburg-real-portrait.png" },
+    { category: "Landmarks", question: "What is the famous cathedral on Red Square with colourful domes?", options: ["Kazan Cathedral", "St. Basil's Cathedral", "Christ the Saviour", "St. Isaac's Cathedral"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/st-basils-cathedral-real.jpg" },
+    { category: "Literature", question: "Who wrote the novel War and Peace?", options: ["Dostoevsky", "Chekhov", "Leo Tolstoy", "Turgenev"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/leo-tolstoy-realistic-portrait.jpg" },
+    { category: "Science", question: "Who created the periodic table of elements in 1869?", options: ["Ivan Pavlov", "Dmitri Mendeleev", "Lobachevsky", "Sergei Korolev"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/mendeleev-realistic-portrait.jpg" },
+    { category: "Music", question: "Who composed Swan Lake and The Nutcracker?", options: ["Rachmaninoff", "Stravinsky", "Tchaikovsky", "Mussorgsky"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/tchaikovsky-realistic-portrait.jpg" },
+    { category: "History", question: "Which tsar founded St. Petersburg in 1703?", options: ["Ivan the Terrible", "Peter the Great", "Alexander II", "Nicholas II"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/peter-great-realistic-portrait.jpg" },
+    { category: "Food", question: "What is the traditional Russian beetroot soup called?", options: ["Shchi", "Borscht", "Solyanka", "Okroshka"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/borscht-traditional-russian.jpg" },
+    { category: "Space", question: "Who was the first human in space in 1961?", options: ["Gherman Titov", "Yuri Gagarin", "Alexei Leonov", "Valentina Tereshkova"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/yuri-gagarin-realistic-portrait.jpg" },
+    { category: "Literature", question: "Who wrote Eugene Onegin?", options: ["Lermontov", "Alexander Pushkin", "Sergei Yesenin", "Mayakovsky"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/alexander-pushkin-realistic-portrait.jpg" },
+    { category: "Art", question: "Who painted The Ninth Wave?", options: ["Ilya Repin", "Ivan Aivazovsky", "Isaac Levitan", "Viktor Vasnetsov"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/aivazovsky-realistic-portrait.jpg" },
+    { category: "Geography", question: "What is the deepest lake in the world located in Siberia?", options: ["Lake Ladoga", "Lake Onega", "Lake Baikal", "Caspian Sea"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/lake-baikal-siberia-real.jpg" },
+    { category: "Traditions", question: "Which holiday features burning a straw effigy and eating blini?", options: ["New Year", "Maslenitsa", "Easter", "Ivan Kupala"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/maslenitsa-tradition-russia.jpg" },
+    { category: "Literature", question: "Who wrote Crime and Punishment?", options: ["Leo Tolstoy", "Fyodor Dostoevsky", "Anton Chekhov", "Nikolai Gogol"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/dostoevsky-realistic-portrait.jpg" },
+    { category: "Music", question: "Who composed Pictures at an Exhibition?", options: ["Modest Mussorgsky", "Rimsky-Korsakov", "Alexander Borodin", "Mily Balakirev"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/mussorgsky-realistic-portrait.jpg" },
+    { category: "Politics", question: "Who was the first President of the Russian Federation?", options: ["Vladimir Putin", "Mikhail Gorbachev", "Boris Yeltsin", "Dmitry Medvedev"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/boris-yeltsin-realistic-portrait.jpg" },
+    { category: "Food", question: "What are pelmeni?", options: ["Thin pancakes", "Meat dumplings", "Fish soup", "Honey cake"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/pelmeni-traditional-dumplings.jpg" },
+    { category: "Science", question: "Who is famous for experiments with conditioned reflexes in dogs?", options: ["Mendeleev", "Ivan Pavlov", "Sergei Korolev", "Andrei Sakharov"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/pavlov-realistic-portrait.jpg" },
+    { category: "Art", question: "Who created the painting Black Square in 1915?", options: ["Kandinsky", "Kazimir Malevich", "Marc Chagall", "El Lissitzky"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/malevich-realistic-portrait.jpg" },
+    { category: "Geography", question: "Which city hosted the 2014 Winter Olympics?", options: ["Moscow", "St. Petersburg", "Sochi", "Kazan"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/sochi-olympics-2014.jpg" },
+    { category: "Literature", question: "Who wrote The Master and Margarita?", options: ["Mikhail Bulgakov", "Boris Pasternak", "Solzhenitsyn", "Vladimir Nabokov"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/bulgakov-realistic-portrait.jpg" },
+    { category: "History", question: "Which empress corresponded with Enlightenment philosophers?", options: ["Elizabeth Petrovna", "Catherine the Great", "Anna Ioannovna", "Maria Feodorovna"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/catherine-great-realistic-portrait.jpg" },
+    { category: "Music", question: "Who is famous for four piano concertos and Rhapsody on a Theme of Paganini?", options: ["Tchaikovsky", "Sergei Rachmaninoff", "Stravinsky", "Shostakovich"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/rachmaninoff-realistic-portrait.jpg" },
+    { category: "Food", question: "What is kvass?", options: ["Vodka", "Fermented bread drink", "Herbal tea", "Fruit compote"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/kvass-traditional-drink.jpg" },
+    { category: "Space", question: "Who designed Sputnik 1 launched in 1957?", options: ["Yuri Gagarin", "Sergei Korolev", "Tsiolkovsky", "Valentin Glushko"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/korolev-realistic-portrait.jpg" },
+    { category: "Art", question: "Who painted Barge Haulers on the Volga?", options: ["Ilya Repin", "Vasily Surikov", "Ivan Kramskoy", "Alexei Savrasov"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/repin-realistic-portrait.jpg" },
+    { category: "Geography", question: "What is the longest river in Europe flowing through Russia?", options: ["Danube", "Volga", "Dnieper", "Don"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/volga-river-russia-real.jpg" },
+    { category: "Literature", question: "Who wrote The Cherry Orchard?", options: ["Anton Chekhov", "Alexander Ostrovsky", "Maxim Gorky", "Nikolai Gogol"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/chekhov-realistic-portrait.jpg" },
+    { category: "History", question: "Who initiated perestroika and glasnost?", options: ["Leonid Brezhnev", "Mikhail Gorbachev", "Nikita Khrushchev", "Yuri Andropov"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/gorbachev-realistic-portrait.jpg" },
+    { category: "Music", question: "Who composed The Firebird and The Rite of Spring?", options: ["Sergei Prokofiev", "Igor Stravinsky", "Dmitri Shostakovich", "Aram Khachaturian"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/stravinsky-realistic-portrait.jpg" },
+    { category: "Food", question: "What is the traditional Russian New Year salad called?", options: ["Vinegret", "Olivier salad", "Herring under fur coat", "Mimosa salad"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/olivier-salad-traditional.jpg" },
+    { category: "Science", question: "Who founded Moscow University?", options: ["Mendeleev", "Mikhail Lomonosov", "Alexander Butlerov", "Nikolay Zinin"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/lomonosov-realistic-portrait.jpg" },
+    { category: "Art", question: "Who is known for painting Russian birch landscapes?", options: ["Isaac Levitan", "Ivan Shishkin", "Alexei Savrasov", "Fyodor Vasilyev"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/levitan-realistic-portrait.jpg" },
+    { category: "Geography", question: "Which city is famous for White Nights?", options: ["Moscow", "St. Petersburg", "Murmansk", "Arkhangelsk"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/st-petersburg-white-nights.jpg" },
+    { category: "Literature", question: "Who wrote Doctor Zhivago?", options: ["Solzhenitsyn", "Boris Pasternak", "Mikhail Sholokhov", "Ivan Bunin"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/pasternak-realistic-portrait.jpg" },
+    { category: "Traditions", question: "Who is the Russian Grandfather Frost?", options: ["Ded Moroz", "Baba Yaga", "Koschei", "Domovoy"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/ded-moroz-traditional.jpg" },
+    { category: "History", question: "Which battle in 1812 was against Napoleon's army?", options: ["Battle of Borodino", "Battle of Poltava", "Battle of Kulikovo", "Battle of Stalingrad"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/borodino-battle-1812.jpg" },
+    { category: "Music", question: "Who composed the opera Boris Godunov?", options: ["Tchaikovsky", "Modest Mussorgsky", "Rimsky-Korsakov", "Mikhail Glinka"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/mussorgsky-opera-portrait.jpg" },
+    { category: "Food", question: "What are blini?", options: ["Meat pies", "Thin pancakes", "Dumplings", "Cookies"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/blini-traditional-pancakes.jpg" },
+    { category: "Science", question: "Who won the Nobel Prize for Cherenkov radiation?", options: ["Andrei Sakharov", "Pavel Cherenkov", "Lev Landau", "Igor Tamm"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/cherenkov-realistic-portrait.jpg" },
+    { category: "Art", question: "Who painted Morning in a Pine Forest?", options: ["Ivan Shishkin", "Isaac Levitan", "Ilya Repin", "Viktor Vasnetsov"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/shishkin-portrait.jpg" },
+    { category: "Geography", question: "How many time zones does Russia span?", options: ["7", "9", "11", "13"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/russia-timezones-map.jpg" },
+    { category: "Literature", question: "Who wrote The Captain's Daughter?", options: ["Alexander Pushkin", "Mikhail Lermontov", "Nikolai Gogol", "Ivan Turgenev"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/pushkin-captain-daughter.jpg" },
+    { category: "History", question: "Who was the first crowned Tsar of Russia?", options: ["Ivan III", "Ivan IV", "Peter I", "Alexander I"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/ivan-terrible-tsar.jpg" },
+    { category: "Music", question: "Who composed Symphony No. 7 Leningrad?", options: ["Sergei Prokofiev", "Dmitri Shostakovich", "Aram Khachaturian", "Rodion Shchedrin"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/shostakovich-portrait.jpg" },
+    { category: "Food", question: "What are pirozhki?", options: ["Small buns with filling", "Layered cake", "Meat stew", "Vegetable salad"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/pirozhki-traditional.jpg" },
+    { category: "Science", question: "Who is the father of astronautics?", options: ["Sergei Korolev", "Konstantin Tsiolkovsky", "Yuri Kondratyuk", "Friedrich Zander"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/tsiolkovsky-astronautics.jpg" },
+    { category: "Art", question: "Who painted Alyonushka?", options: ["Viktor Vasnetsov", "Ilya Repin", "Isaac Levitan", "Mikhail Vrubel"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/vasnetsov-portrait.jpg" },
+    { category: "Geography", question: "What is the largest city in Russia by population?", options: ["St. Petersburg", "Novosibirsk", "Moscow", "Yekaterinburg"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/moscow-city-center.jpg" },
+    { category: "Literature", question: "Who wrote The Brothers Karamazov?", options: ["Leo Tolstoy", "Fyodor Dostoevsky", "Anton Chekhov", "Ivan Turgenev"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/dostoevsky-karamazov.jpg" },
+    { category: "Traditions", question: "What is the three-stringed Russian instrument called?", options: ["Balalaika", "Domra", "Gusli", "Garmon"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/balalaika-traditional.jpg" }
 ];
 
 let currentQuestion = 0;
 let userAnswers = [];
 let score = 0;
+let answered = false;
 
 function init() {
     userAnswers = new Array(quizData.length).fill(null);
     currentQuestion = 0;
     score = 0;
+    answered = false;
 }
 
 function showScreen(screenId) {
@@ -656,23 +699,37 @@ function startQuiz() {
 
 function loadQuestion() {
     var q = quizData[currentQuestion];
+    answered = false;
     
     document.getElementById('categoryBadge').textContent = q.category;
     document.getElementById('questionNumber').textContent = 'Question ' + (currentQuestion + 1) + '/50';
     document.getElementById('questionText').textContent = q.question;
     
+    // Hide feedback message
+    var feedbackMsg = document.getElementById('feedbackMessage');
+    feedbackMsg.className = 'feedback-message';
+    feedbackMsg.style.display = 'none';
+    
+    // Show/hide image
     var imgContainer = document.getElementById('imageContainer');
     var img = document.getElementById('questionImage');
     
     if (q.image && q.image.length > 10) {
         img.src = q.image;
-        imgContainer.classList.add('visible');
-        img.style.display = 'block';
+        img.onload = function() {
+            imgContainer.classList.add('visible');
+            img.style.display = 'block';
+        };
+        img.onerror = function() {
+            imgContainer.classList.remove('visible');
+            imgContainer.style.display = 'none';
+        };
     } else {
         imgContainer.classList.remove('visible');
         imgContainer.style.display = 'none';
     }
     
+    // Create options
     var container = document.getElementById('optionsContainer');
     container.innerHTML = '';
     
@@ -695,21 +752,42 @@ function loadQuestion() {
 }
 
 function selectAnswer(index) {
-    userAnswers[currentQuestion] = index;
+    if (answered) return;
+    answered = true;
     
+    userAnswers[currentQuestion] = index;
+    var q = quizData[currentQuestion];
     var buttons = document.querySelectorAll('.option-btn');
-    for (var i = 0; i < buttons.length; i++) {
-        buttons[i].classList.remove('selected');
-        if (i === index) {
-            buttons[i].classList.add('selected');
-        }
+    var feedbackMsg = document.getElementById('feedbackMessage');
+    
+    // Disable all buttons
+    buttons.forEach(function(btn) {
+        btn.classList.add('disabled');
+    });
+    
+    // Show instant feedback
+    if (index === q.correct) {
+        // Correct answer
+        buttons[index].classList.add('correct');
+        feedbackMsg.textContent = '✓ Correct! Well done!';
+        feedbackMsg.className = 'feedback-message correct';
+        score++;
+    } else {
+        // Incorrect answer
+        buttons[index].classList.add('incorrect');
+        buttons[q.correct].classList.add('correct');
+        feedbackMsg.textContent = '✗ Incorrect. The correct answer is highlighted in green.';
+        feedbackMsg.className = 'feedback-message incorrect';
     }
     
+    // Auto advance after delay
     setTimeout(function() {
         if (currentQuestion < quizData.length - 1) {
             nextQuestion();
+        } else {
+            finishQuiz();
         }
-    }, 300);
+    }, 2000);
 }
 
 function nextQuestion() {
@@ -748,13 +826,6 @@ function updateNavigation() {
 }
 
 function finishQuiz() {
-    score = 0;
-    for (var i = 0; i < quizData.length; i++) {
-        if (userAnswers[i] === quizData[i].correct) {
-            score++;
-        }
-    }
-    
     document.getElementById('finalScore').textContent = score + '/50';
     
     var pct = (score / quizData.length) * 100;
@@ -823,10 +894,10 @@ function createConfetti() {
 }
 
 document.addEventListener('keydown', function(e) {
-    if (!document.getElementById('quizScreen').classList.contains('active')) return;
+    if (!document.getElementById('quizScreen').classList.contains('active') || answered) return;
     
     if (e.key === 'ArrowRight' || e.key === 'Enter') {
-        nextQuestion();
+        if (answered) nextQuestion();
     } else if (e.key === 'ArrowLeft') {
         previousQuestion();
     } else if (e.key >= '1' && e.key <= '4') {
