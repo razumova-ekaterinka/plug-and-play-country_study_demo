@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russia Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: 
+                radial-gradient(ellipse at top, rgba(255,215,0,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(220,20,60,0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 70%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                url("image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c41e3a' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .russian-ornament {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: repeating-linear-gradient(90deg, 
+                #c41e3a 0px, #c41e3a 20px, 
+                #ffffff 20px, #ffffff 40px, 
+                #0039a6 40px, #0039a6 60px,
+                #ffffff 60px, #ffffff 80px,
+                #c41e3a 80px, #c41e3a 100px);
+            z-index: 100;
+        }
+
+        .russian-ornament.bottom {
+            top: auto;
+            bottom: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+            position: relative;
+            z-index: 10;
+            border: 4px solid #c41e3a;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #c41e3a 0%, #8b0000 50%, #c41e3a 100%);
+            color: white;
+            padding: 28px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                radial-gradient(circle at 30% 70%, rgba(255,215,0,0.15) 2px, transparent 3px),
+                radial-gradient(circle at 70% 30%, rgba(255,255,255,0.1) 2px, transparent 3px);
+            background-size: 30px 30px;
+            opacity: 0.4;
+            animation: patternMove 25s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(30px, 30px) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.4em;
+            font-weight: 800;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+            letter-spacing: 1px;
+        }
+
+        .progress-container {
+            padding: 14px 20px 12px;
+            background: linear-gradient(180deg, #f5f5f5, #e8e8e8);
+            border-bottom: 2px solid #d0d0d0;
+        }
+
+        .progress-bar {
+            background: #c0c0c0;
+            height: 12px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #ffd700 0%, #c41e3a 50%, #0039a6 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .content {
+            padding: 25px 20px;
+            background: #ffffff;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #fafafa, #f0f0f0);
+            border-radius: 18px;
+            padding: 25px 20px;
+            margin-bottom: 18px;
+            border: 3px solid #c41e3a;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .category-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #c41e3a, #8b0000);
+            color: white;
+            padding: 7px 18px;
+            border-radius: 22px;
+            font-size: 0.85em;
+            margin-bottom: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 3px 10px rgba(196,30,58,0.3);
+        }
+
+        .question-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #0039a6, #1a4d8f);
+            color: white;
+            padding: 7px 20px;
+            border-radius: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1em;
+            box-shadow: 0 3px 10px rgba(0,57,166,0.3);
+        }
+
+        .question-image-container {
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid #ffd700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            background: #ffffff;
+            display: none;
+        }
+
+        .question-image-container.visible {
+            display: block;
+        }
+
+        .question-image {
+            width: 100%;
+            height: auto;
+            max-height: 320px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .question-text {
+            font-size: 1.35em;
+            color: #000000;
+            margin-bottom: 20px;
+            line-height: 1.45;
+            font-weight: 700;
+            text-align: center;
+            padding: 18px 15px;
+            background: #ffffff;
+            border-radius: 12px;
+            border-left: 5px solid #c41e3a;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #ffffff;
+            border: 3px solid #cccccc;
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: #000000;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+        }
+
+        .option-btn:hover {
+            border-color: #c41e3a;
+            background: #fff5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(196,30,58,0.2);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #0039a6, #1a4d8f);
+            color: white;
+            border-color: #ffd700;
+            box-shadow: 0 5px 15px rgba(0,57,166,0.35);
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(135deg, #2e7d32, #4caf50) !important;
+            color: white !important;
+            border-color: #ffd700 !important;
+        }
+
+        .option-btn.incorrect {
+            background: linear-gradient(135deg, #c62828, #ef5350) !important;
+            color: white !important;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 15px 22px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn:disabled {
+            background: #b8b8b8 !important;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #0039a6, #1a4d8f);
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #c41e3a, #8b0000);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000000;
+        }
+
+        .start-screen, .result-screen {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .start-screen h2 {
+            color: #000000;
+            font-size: 1.9em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .start-screen p {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f5f5f5, #ffffff);
+            border-radius: 18px;
+            padding: 30px 25px;
+            border: 3px solid #0039a6;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .score-display {
+            font-size: 4em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #c41e3a, #ffd700, #0039a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 15px 0;
+            line-height: 1;
+        }
+
+        .feedback-text {
+            font-size: 1.25em;
+            color: #000000;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .review-section {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .review-section h3 {
+            color: #000;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #c41e3a;
+            font-weight: 700;
+        }
+
+        .review-item {
+            background: #ffffff;
+            border-left: 5px solid #0039a6;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .review-item.correct {
+            border-left-color: #2e7d32;
+            background: #e8f5e9;
+        }
+
+        .review-item.incorrect {
+            border-left-color: #c62828;
+            background: #ffebee;
+        }
+
+        .review-question {
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 6px;
+            font-size: 0.98em;
+            line-height: 1.4;
+        }
+
+        .review-answer {
+            color: #333;
+            font-size: 0.92em;
+            line-height: 1.45;
+        }
+
+        .review-answer strong {
+            color: #c41e3a;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .matryoshka {
+            position: fixed;
+            font-size: 8em;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .matryoshka.tl { top: 80px; left: 20px; transform: rotate(-15deg); }
+        .matryoshka.tr { top: 80px; right: 20px; transform: rotate(15deg); }
+        .matryoshka.bl { bottom: 60px; left: 20px; transform: rotate(-10deg); }
+        .matryoshka.br { bottom: 60px; right: 20px; transform: rotate(10deg); }
+
+        @media (max-width: 650px) {
+            .header h1 { font-size: 1.7em; }
+            .content { padding: 18px 12px; }
+            .question-card { padding: 18px 12px; }
+            .question-text { font-size: 1.15em; }
+            .question-image { max-height: 200px; }
+            .option-btn { font-size: 0.95em; padding: 14px 16px; }
+            .navigation { flex-direction: column; }
+            .nav-btn { width: 100%; }
+            .score-display { font-size: 3.2em; }
+            .matryoshka { font-size: 5em; }
+        }
+
+        button {
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="russian-ornament"></div>
+<div class="russian-ornament bottom"></div>
+<div class="matryoshka tl">🪆</div>
+<div class="matryoshka tr">🪆</div>
+<div class="matryoshka bl">🪆</div>
+<div class="matryoshka br">🪆</div>
+
+<div class="container">
+    <div class="header">
+        <h1>Russia Quiz</h1>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">Question 1 of 50</div>
+    </div>
+
+    <div class="content">
+        <!-- Start Screen -->
+        <div class="screen active" id="startScreen">
+            <div class="start-screen">
+                <div style="font-size: 4.5em; margin-bottom: 12px;">🎭</div>
+                <h2>Discover Russia!</h2>
+                <p style="max-width: 500px; margin: 0 auto 25px;">
+                    50 engaging questions about Russian culture, history, geography, literature, art, music, and traditions.
+                </p>
+                <button class="nav-btn btn-red" onclick="startQuiz()" style="font-size: 1.25em; padding: 18px 45px;">
+                    🚀 Start Quiz
+                </button>
+                <p style="color: #666; font-size: 0.9em; margin-top: 20px;">
+                    ⌨️ Use arrow keys or numbers 1-4 to answer
+                </p>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div class="screen" id="quizScreen">
+            <div class="question-card">
+                <span class="category-badge" id="categoryBadge">Category</span>
+                <div class="question-number" id="questionNumber">Question 1/50</div>
+                <div class="question-image-container" id="imageContainer">
+                    <img class="question-image" id="questionImage" src="" alt="Question illustration">
+                </div>
+                <div class="question-text" id="questionText"></div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-btn btn-blue" id="prevBtn" onclick="previousQuestion()">← Previous</button>
+                <button class="nav-btn btn-red" id="nextBtn" onclick="nextQuestion()">Next →</button>
+                <button class="nav-btn btn-gold" onclick="goHome()">🏠 Home</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="screen" id="resultScreen">
+            <div class="result-screen">
+                <div class="result-card">
+                    <div style="font-size: 4em; margin-bottom: 10px;">🏆</div>
+                    <h2 style="color: #000; margin-bottom: 10px; font-weight: 700;">Quiz Completed!</h2>
+                    <div class="score-display" id="finalScore">0/50</div>
+                    <div class="feedback-text" id="feedbackText"></div>
+                    <div id="reviewSection" class="review-section"></div>
+                    <div class="navigation" style="margin-top: 25px;">
+                        <button class="nav-btn btn-red" onclick="restartQuiz()" style="flex:1; min-width:140px;">🔄 Try Again</button>
+                        <button class="nav-btn btn-gold" onclick="goHome()" style="flex:1; min-width:140px;">🏠 Home</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="celebration" id="celebration"></div>
+
+<script>
+// Quiz Data - 50 Questions with realistic images
+const quizData = [
+    { category: "Geography", question: "Which city is known as the Northern Capital of Russia?", options: ["Moscow", "St. Petersburg", "Kazan", "Novosibirsk"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/18c9635ac-d932-44cd-93d5-09d961542406.png" },
+    { category: "Landmarks", question: "What is the famous cathedral on Red Square with colourful domes?", options: ["Kazan Cathedral", "St. Basil's Cathedral", "Christ the Saviour", "St. Isaac's Cathedral"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1f9256458-7f8e-470e-9ff1-fa92d592dbb7.png" },
+    { category: "Literature", question: "Who wrote the novel War and Peace?", options: ["Dostoevsky", "Chekhov", "Leo Tolstoy", "Turgenev"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1467adfc0-03ac-44aa-b6ff-f57241a260ee.png" },
+    { category: "Science", question: "Who created the periodic table of elements in 1869?", options: ["Ivan Pavlov", "Dmitri Mendeleev", "Lobachevsky", "Sergei Korolev"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/186f1984b-1d54-4010-a922-296095e53d18.png" },
+    { category: "Music", question: "Who composed Swan Lake and The Nutcracker?", options: ["Rachmaninoff", "Stravinsky", "Tchaikovsky", "Mussorgsky"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/13813c30c-8615-4945-9301-37d65eab475c.png" },
+    { category: "History", question: "Which tsar founded St. Petersburg in 1703?", options: ["Ivan the Terrible", "Peter the Great", "Alexander II", "Nicholas II"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1859518fd-d81f-477d-a63a-3425a84eb29e.png" },
+    { category: "Food", question: "What is the traditional Russian beetroot soup called?", options: ["Shchi", "Borscht", "Solyanka", "Okroshka"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1b60c9680-aa5e-4e02-85f2-6b4627e7af91.png" },
+    { category: "Space", question: "Who was the first human in space in 1961?", options: ["Gherman Titov", "Yuri Gagarin", "Alexei Leonov", "Valentina Tereshkova"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/142452cc4-3c3c-4ebf-83e1-fbdcf296c34c.png" },
+    { category: "Literature", question: "Who wrote Eugene Onegin?", options: ["Lermontov", "Alexander Pushkin", "Sergei Yesenin", "Mayakovsky"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1eb03e115-f8b8-42da-9a79-1d29368af6ba.png" },
+    { category: "Art", question: "Who painted The Ninth Wave?", options: ["Ilya Repin", "Ivan Aivazovsky", "Isaac Levitan", "Viktor Vasnetsov"], correct: 1, image: "" },
+    { category: "Geography", question: "What is the deepest lake in the world located in Siberia?", options: ["Lake Ladoga", "Lake Onega", "Lake Baikal", "Caspian Sea"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/11ca0232a-4c07-42ab-9a6d-3d07b3e0fff2.png" },
+    { category: "Traditions", question: "Which holiday features burning a straw effigy and eating blini?", options: ["New Year", "Maslenitsa", "Easter", "Ivan Kupala"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/13d05f78c-0c10-4d78-a08a-cb2866a5d7f7.png" },
+    { category: "Literature", question: "Who wrote Crime and Punishment?", options: ["Leo Tolstoy", "Fyodor Dostoevsky", "Anton Chekhov", "Nikolai Gogol"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/14b53fd12-71fc-49a2-a03b-42cc59676239.png" },
+    { category: "Music", question: "Who composed Pictures at an Exhibition?", options: ["Modest Mussorgsky", "Rimsky-Korsakov", "Alexander Borodin", "Mily Balakirev"], correct: 0, image: "" },
+    { category: "Politics", question: "Who was the first President of the Russian Federation?", options: ["Vladimir Putin", "Mikhail Gorbachev", "Boris Yeltsin", "Dmitry Medvedev"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1628d42c1-eb20-49b3-bdd5-c45c5f96fe30.png" },
+    { category: "Food", question: "What are pelmeni?", options: ["Thin pancakes", "Meat dumplings", "Fish soup", "Honey cake"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/141219488-6630-447e-ad20-31134e19b246.png" },
+    { category: "Science", question: "Who is famous for experiments with conditioned reflexes in dogs?", options: ["Mendeleev", "Ivan Pavlov", "Sergei Korolev", "Andrei Sakharov"], correct: 1, image: "" },
+    { category: "Art", question: "Who created the painting Black Square in 1915?", options: ["Kandinsky", "Kazimir Malevich", "Marc Chagall", "El Lissitzky"], correct: 1, image: "" },
+    { category: "Geography", question: "Which city hosted the 2014 Winter Olympics?", options: ["Moscow", "St. Petersburg", "Sochi", "Kazan"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/173ffc10f-fd9d-4661-96ea-42fbfb75fe64.png" },
+    { category: "Literature", question: "Who wrote The Master and Margarita?", options: ["Mikhail Bulgakov", "Boris Pasternak", "Solzhenitsyn", "Vladimir Nabokov"], correct: 0, image: "" },
+    { category: "History", question: "Which empress corresponded with Enlightenment philosophers?", options: ["Elizabeth Petrovna", "Catherine the Great", "Anna Ioannovna", "Maria Feodorovna"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1af5704ad-76ec-4d38-aace-2dfc700c0e57.png" },
+    { category: "Music", question: "Who is famous for four piano concertos and Rhapsody on a Theme of Paganini?", options: ["Tchaikovsky", "Sergei Rachmaninoff", "Stravinsky", "Shostakovich"], correct: 1, image: "" },
+    { category: "Food", question: "What is kvass?", options: ["Vodka", "Fermented bread drink", "Herbal tea", "Fruit compote"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/148b23cce-e604-468a-9256-ba0730da585a.png" },
+    { category: "Space", question: "Who designed Sputnik 1 launched in 1957?", options: ["Yuri Gagarin", "Sergei Korolev", "Tsiolkovsky", "Valentin Glushko"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/17643f9ec-d6a3-4e25-b905-89455d266533.png" },
+    { category: "Art", question: "Who painted Barge Haulers on the Volga?", options: ["Ilya Repin", "Vasily Surikov", "Ivan Kramskoy", "Alexei Savrasov"], correct: 0, image: "" },
+    { category: "Geography", question: "What is the longest river in Europe flowing through Russia?", options: ["Danube", "Volga", "Dnieper", "Don"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/164281861-7d23-48fa-b2dc-4f47dd597c20.png" },
+    { category: "Literature", question: "Who wrote The Cherry Orchard?", options: ["Anton Chekhov", "Alexander Ostrovsky", "Maxim Gorky", "Nikolai Gogol"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1081a2874-3c31-4d57-85d0-80a0faac8b4f.png" },
+    { category: "History", question: "Who initiated perestroika and glasnost?", options: ["Leonid Brezhnev", "Mikhail Gorbachev", "Nikita Khrushchev", "Yuri Andropov"], correct: 1, image: "" },
+    { category: "Music", question: "Who composed The Firebird and The Rite of Spring?", options: ["Sergei Prokofiev", "Igor Stravinsky", "Dmitri Shostakovich", "Aram Khachaturian"], correct: 1, image: "" },
+    { category: "Food", question: "What is the traditional Russian New Year salad called?", options: ["Vinegret", "Olivier salad", "Herring under fur coat", "Mimosa salad"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1fd9f1963-598d-46a3-8174-5fbf9372b517.png" },
+    { category: "Science", question: "Who founded Moscow University?", options: ["Mendeleev", "Mikhail Lomonosov", "Alexander Butlerov", "Nikolay Zinin"], correct: 1, image: "" },
+    { category: "Art", question: "Who is known for painting Russian birch landscapes?", options: ["Isaac Levitan", "Ivan Shishkin", "Alexei Savrasov", "Fyodor Vasilyev"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/18770e322-46cd-4f27-b44a-949ad5273a36.png" },
+    { category: "Geography", question: "Which city is famous for White Nights?", options: ["Moscow", "St. Petersburg", "Murmansk", "Arkhangelsk"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1e22736ab-e090-47c7-bac9-be771d9d5134.png" },
+    { category: "Literature", question: "Who wrote Doctor Zhivago?", options: ["Solzhenitsyn", "Boris Pasternak", "Mikhail Sholokhov", "Ivan Bunin"], correct: 1, image: "" },
+    { category: "Traditions", question: "Who is the Russian Grandfather Frost?", options: ["Ded Moroz", "Baba Yaga", "Koschei", "Domovoy"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/11e3ab452-e0aa-4886-8fe4-3f9da5012db9.png" },
+    { category: "History", question: "Which battle in 1812 was against Napoleon's army?", options: ["Battle of Borodino", "Battle of Poltava", "Battle of Kulikovo", "Battle of Stalingrad"], correct: 0, image: "" },
+    { category: "Music", question: "Who composed the opera Boris Godunov?", options: ["Tchaikovsky", "Modest Mussorgsky", "Rimsky-Korsakov", "Mikhail Glinka"], correct: 1, image: "" },
+    { category: "Food", question: "What are blini?", options: ["Meat pies", "Thin pancakes", "Dumplings", "Cookies"], correct: 1, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1e1f30d12-fb8a-4bd3-acf2-69a971a9c0ae.png" },
+    { category: "Science", question: "Who won the Nobel Prize for Cherenkov radiation?", options: ["Andrei Sakharov", "Pavel Cherenkov", "Lev Landau", "Igor Tamm"], correct: 1, image: "" },
+    { category: "Art", question: "Who painted Morning in a Pine Forest?", options: ["Ivan Shishkin", "Isaac Levitan", "Ilya Repin", "Viktor Vasnetsov"], correct: 0, image: "" },
+    { category: "Geography", question: "How many time zones does Russia span?", options: ["7", "9", "11", "13"], correct: 2, image: "" },
+    { category: "Literature", question: "Who wrote The Captain's Daughter?", options: ["Alexander Pushkin", "Mikhail Lermontov", "Nikolai Gogol", "Ivan Turgenev"], correct: 0, image: "" },
+    { category: "History", question: "Who was the first crowned Tsar of Russia?", options: ["Ivan III", "Ivan IV", "Peter I", "Alexander I"], correct: 1, image: "" },
+    { category: "Music", question: "Who composed Symphony No. 7 Leningrad?", options: ["Sergei Prokofiev", "Dmitri Shostakovich", "Aram Khachaturian", "Rodion Shchedrin"], correct: 1, image: "" },
+    { category: "Food", question: "What are pirozhki?", options: ["Small buns with filling", "Layered cake", "Meat stew", "Vegetable salad"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/130b3aa1c-c1f3-4146-8e40-a5a186411a1c.png" },
+    { category: "Science", question: "Who is the father of astronautics?", options: ["Sergei Korolev", "Konstantin Tsiolkovsky", "Yuri Kondratyuk", "Friedrich Zander"], correct: 1, image: "" },
+    { category: "Art", question: "Who painted Alyonushka?", options: ["Viktor Vasnetsov", "Ilya Repin", "Isaac Levitan", "Mikhail Vrubel"], correct: 0, image: "" },
+    { category: "Geography", question: "What is the largest city in Russia by population?", options: ["St. Petersburg", "Novosibirsk", "Moscow", "Yekaterinburg"], correct: 2, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1ba511eee-b20e-48cb-80a9-a8feaa3128bf.png" },
+    { category: "Literature", question: "Who wrote The Brothers Karamazov?", options: ["Leo Tolstoy", "Fyodor Dostoevsky", "Anton Chekhov", "Ivan Turgenev"], correct: 1, image: "" },
+    { category: "Traditions", question: "What is the three-stringed Russian instrument called?", options: ["Balalaika", "Domra", "Gusli", "Garmon"], correct: 0, image: "https://image.qwenlm.ai/public_source/7d002144-a0c8-480f-85fd-6f28dea656f5/1e7457d55-4d06-48a0-b851-3ecec7b4bd24.png" }
+];
+
+let currentQuestion = 0;
+let userAnswers = [];
+let score = 0;
+
+function init() {
+    userAnswers = new Array(quizData.length).fill(null);
+    currentQuestion = 0;
+    score = 0;
+}
+
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(function(s) {
+        s.classList.remove('active');
+    });
+    document.getElementById(screenId).classList.add('active');
+}
+
+function startQuiz() {
+    init();
+    showScreen('quizScreen');
+    loadQuestion();
+    updateProgress();
+}
+
+function loadQuestion() {
+    var q = quizData[currentQuestion];
+    
+    document.getElementById('categoryBadge').textContent = q.category;
+    document.getElementById('questionNumber').textContent = 'Question ' + (currentQuestion + 1) + '/50';
+    document.getElementById('questionText').textContent = q.question;
+    
+    var imgContainer = document.getElementById('imageContainer');
+    var img = document.getElementById('questionImage');
+    
+    if (q.image && q.image.length > 10) {
+        img.src = q.image;
+        imgContainer.classList.add('visible');
+        img.style.display = 'block';
+    } else {
+        imgContainer.classList.remove('visible');
+        imgContainer.style.display = 'none';
+    }
+    
+    var container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+    
+    for (var i = 0; i < q.options.length; i++) {
+        var btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = q.options[i];
+        btn.onclick = (function(idx) {
+            return function() { selectAnswer(idx); };
+        })(i);
+        
+        if (userAnswers[currentQuestion] === i) {
+            btn.classList.add('selected');
+        }
+        
+        container.appendChild(btn);
+    }
+    
+    updateNavigation();
+}
+
+function selectAnswer(index) {
+    userAnswers[currentQuestion] = index;
+    
+    var buttons = document.querySelectorAll('.option-btn');
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('selected');
+        if (i === index) {
+            buttons[i].classList.add('selected');
+        }
+    }
+    
+    setTimeout(function() {
+        if (currentQuestion < quizData.length - 1) {
+            nextQuestion();
+        }
+    }, 300);
+}
+
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+        updateProgress();
+    } else {
+        finishQuiz();
+    }
+}
+
+function previousQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+        updateProgress();
+    }
+}
+
+function updateProgress() {
+    var pct = ((currentQuestion + 1) / quizData.length) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = 'Question ' + (currentQuestion + 1) + ' of ' + quizData.length;
+}
+
+function updateNavigation() {
+    document.getElementById('prevBtn').disabled = (currentQuestion === 0);
+    
+    var nextBtn = document.getElementById('nextBtn');
+    if (currentQuestion === quizData.length - 1) {
+        nextBtn.textContent = '✓ Submit';
+    } else {
+        nextBtn.textContent = 'Next →';
+    }
+}
+
+function finishQuiz() {
+    score = 0;
+    for (var i = 0; i < quizData.length; i++) {
+        if (userAnswers[i] === quizData[i].correct) {
+            score++;
+        }
+    }
+    
+    document.getElementById('finalScore').textContent = score + '/50';
+    
+    var pct = (score / quizData.length) * 100;
+    var feedback = '';
+    if (pct >= 90) {
+        feedback = '🌟 Outstanding! Excellent knowledge of Russia!';
+        createConfetti();
+    } else if (pct >= 70) {
+        feedback = '👍 Great job! Solid understanding of Russian culture.';
+    } else if (pct >= 50) {
+        feedback = '📚 Good effort! Keep studying to improve.';
+    } else {
+        feedback = '💪 Keep practicing! Review and try again.';
+    }
+    document.getElementById('feedbackText').textContent = feedback;
+    
+    var reviewHtml = '<h3>📋 Review Your Answers:</h3>';
+    for (var i = 0; i < quizData.length; i++) {
+        var q = quizData[i];
+        var ua = userAnswers[i];
+        var isCorrect = (ua === q.correct);
+        reviewHtml += '<div class="review-item ' + (isCorrect ? 'correct' : 'incorrect') + '">';
+        reviewHtml += '<div class="review-question">' + (i+1) + '. ' + q.question + '</div>';
+        reviewHtml += '<div class="review-answer"><strong>Your answer:</strong> ' + (ua !== null ? q.options[ua] : 'Not answered');
+        if (!isCorrect) {
+            reviewHtml += '<br><strong>Correct:</strong> ' + q.options[q.correct];
+        } else {
+            reviewHtml += ' ✓';
+        }
+        reviewHtml += '</div></div>';
+    }
+    document.getElementById('reviewSection').innerHTML = reviewHtml;
+    
+    showScreen('resultScreen');
+}
+
+function goHome() {
+    showScreen('startScreen');
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('progressText').textContent = 'Question 1 of 50';
+}
+
+function restartQuiz() {
+    init();
+    showScreen('quizScreen');
+    loadQuestion();
+    updateProgress();
+}
+
+function createConfetti() {
+    var colors = ['#c41e3a', '#ffd700', '#0039a6', '#ffffff', '#2e7d32'];
+    var cel = document.getElementById('celebration');
+    for (var i = 0; i < 60; i++) {
+        (function(delay) {
+            setTimeout(function() {
+                var c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + '%';
+                c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                c.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                cel.appendChild(c);
+                setTimeout(function() { c.remove(); }, 5500);
+            }, delay);
+        })(i * 40);
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('quizScreen').classList.contains('active')) return;
+    
+    if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        nextQuestion();
+    } else if (e.key === 'ArrowLeft') {
+        previousQuestion();
+    } else if (e.key >= '1' && e.key <= '4') {
+        var idx = parseInt(e.key) - 1;
+        if (idx < quizData[currentQuestion].options.length) {
+            selectAnswer(idx);
+        }
+    }
+});
+</script>
+
+</body>
+</html>
+
